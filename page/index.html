@@ -1,0 +1,23 @@
+<section>
+	<h1>Hello, <span data-bind:text="your-name">you</span>!</h1>
+
+	<p>There is a lot of content on this page. The reason for this is to that the page can become long, and when you scroll down, submitting the form will produce "page jank" that we don't like to see.</p>
+	<p>There's also the scrolling marquee that shouldn't "reset" each time the form is submitted.</p>
+	<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Et placeat repellat sint sit? Autem beatae culpa dolor expedita harum hic laudantium libero, perferendis perspiciatis possimus praesentium saepe sint ullam voluptatibus!</p>
+	<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Alias aspernatur beatae, ducimus eligendi ipsum nihil qui vitae. Beatae cumque doloribus impedit in necessitatibus numquam pariatur porro quibusdam quo rerum. Cum?</p>
+
+	<marquee><h2>Hello, <span data-bind:text="your-name">you</span>!</h2></marquee>
+
+</section>
+
+<section>
+	<h3>Enter your name to be greeted</h3>
+	<form method="post">
+		<label>
+			<span>Your name, please...</span>
+			<input name="your-name" placeholder="e.g. Cody" required autofocus autocomplete="off" data-bind:value="your-name" />
+		</label>
+
+		<button name="do" value="greet">Greet!</button>
+	</form>
+</section>
