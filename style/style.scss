@@ -80,6 +80,10 @@ body>header {
 					padding: 1rem;
 					color: red;
 					text-decoration: none;
+
+					&.not-found {
+						cursor: not-allowed;
+					}
 				}
 			}
 		}

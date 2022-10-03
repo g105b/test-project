@@ -1,79 +1,82 @@
 (function() {
-	const preloadNodeList = document.querySelectorAll("[data-instant-preload]");
-	const preloadQueue = [];
-	const preloadMap = new Map();
-	let activeSW = null;
-	let postMessage = null;
-	let cache = null;
-
-	let preloadUidCallbackObj = {};
+	const preloadNodeList = document.querySelectorAll("[data-instant-preload]")
+	const preloadQueue = []
+	let activeSW = null
+	let postMessage = null
+	let swCallback = {}
 
 	function init() {
 		navigator.serviceWorker.register("/instant-sw.js")
 			.then(registration => {
-				registration.update();
+				registration.update()
 				registration.onupdatefound = function() {
-					console.log("SW updated");
-					activeSW = registration.active;
+					console.log("SW updated")
+					activeSW = registration.active
 				}
 
-				postMessage = (data) => {
-					activeSW && activeSW.postMessage(data);
+				postMessage = (data, callback) => {
+					data.id = Math.random().toString(16).slice(2)
+
+					if(callback) {
+						swCallback[data.id] = callback
+					}
+					activeSW && activeSW.postMessage(data)
 				}
 
 				if(registration.active) {
-					activeSW = registration.active;
+					activeSW = registration.active
 				}
-				instantReady();
+				instantReady()
 			})
 			.catch(err => {
-				console.error("Registration failed:", err);
-			});
+				console.error("Registration failed:", err)
+			})
 
 		navigator.serviceWorker.onmessage = function(e) {
-				console.log("SW Message: ", e.data);
-			};
+			if(e.data.response) {
+				if(swCallback[e.data.response]) {
+					swCallback[e.data.response](e.data)
+				}
+			}
+			console.log("SW Message: ", e.data)
+		}
 	}
 
 	function instantReady() {
-		preloadNodeList.forEach(preload);
-		preloadProcessQueue();
+		preloadNodeList.forEach(preload)
+		preloadProcessQueue()
 	}
 
 	function preload(el) {
 		if(!(el instanceof HTMLAnchorElement)) {
-			el.querySelectorAll("a").forEach(preload);
-			return;
+			el.querySelectorAll("a").forEach(preload)
+			return
 		}
 
-		preloadQueue.push(el);
-		// let uid = Math.random().toString(16).slice(2);
-		// preloadUidCallbackObj[uid] = el;
-		// cache.add(el.href).then(() => {
-		// 	console.log(`Cached ${el.href}`);
-		// });
+		preloadQueue.push(el)
 	}
 
 	function preloadProcessQueue() {
-		let el = preloadQueue.shift();
+		let el = preloadQueue.shift()
 		if(!el) {
-			return;
+			return
 		}
 
-		cache.match(el.href).then(response => {
-			if(response === undefined) {
-				console.log(`There's no response for ${el.href}`);
-				// TODO: Make the request, cache.add the response
-				return;
-			}
 
-			console.log(`Found response for ${el.href}`, response);
-			console.log("DATE:" , response.headers.get("date"), response.headers, response.headers.get("expires"));
-		});
+		let sessionStorageKey = `preload-${el.href}`
+		if(sessionStorage[sessionStorageKey]) {
+			preloadProcessQueue();
+			return
+		}
+		sessionStorage[sessionStorageKey] = +(new Date())
+
+		postMessage({
+			type: "preload",
+			payload: {
+				href: el.href,
+			}
+		}, preloadProcessQueue)
 	}
 
-	caches.open("php.gt/instant").then(c => {
-		cache = c;
-		init();
-	})
-})();
+	init()
+})()

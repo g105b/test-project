@@ -1,1 +1,1 @@
-import "./instant.es6";
+import "./instant.es6"
